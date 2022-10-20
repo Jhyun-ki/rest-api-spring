@@ -22,6 +22,8 @@ class EventTest {
         event.setName(name);
         event.setDescription(description);
 
+        System.out.println(event.hashCode());
+
         //then
         Assertions.assertThat(event.getName()).isEqualTo(name);
         Assertions.assertThat(event.getDescription()).isEqualTo(description);
