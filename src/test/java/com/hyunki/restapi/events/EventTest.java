@@ -38,7 +38,7 @@ class EventTest {
     }
 
     @ParameterizedTest
-    @MethodSource("paramsForTestFree")
+    @MethodSource("parametersForTestFree")
     public void testFree(int basePrice, int maxPrice, boolean isFree) {
         //Given
         Event event = Event.builder()
@@ -52,7 +52,7 @@ class EventTest {
         //Then
         assertThat(event.isFree()).isEqualTo(isFree);
     }
-    private static Object[] paramsForTestFree() {
+    private static Object[] parametersForTestFree() {
         return new Object[] {
                 new Object[] {0, 0, true},
                 new Object[] {100, 0, false},

@@ -3,6 +3,7 @@ package com.hyunki.restapi.events;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -19,7 +20,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE)
+@RequestMapping(value = "/api/events", produces = MediaTypes.HAL_JSON_VALUE + ";charset=UTF-8")
 public class EventController {
 
     private final EventRepository eventRepository;
@@ -41,8 +42,11 @@ public class EventController {
         Event event = modelMapper.map(eventDto, Event.class);
         event.update();
         Event newEvent = this.eventRepository.save(event);
-        URI createdURI = linkTo(EventController.class).slash(newEvent.getId()).toUri();
-        event.setId(10);
-        return ResponseEntity.created(createdURI).body(event);
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
+        URI createdURI = selfLinkBuilder.toUri();
+        EventResource eventResource = new EventResource(event);
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
+        eventResource.add(selfLinkBuilder.withRel("update-events"));
+        return ResponseEntity.created(createdURI).body(eventResource);
     }
 }
