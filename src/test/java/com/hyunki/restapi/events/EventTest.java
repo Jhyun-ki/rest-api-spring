@@ -1,10 +1,18 @@
 package com.hyunki.restapi.events;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.assertj.core.api.Assertions;
+import org.hibernate.annotations.Source;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.runner.RunWith;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+@RunWith(JUnitParamsRunner.class)
 class EventTest {
 
     @Test
@@ -29,66 +37,51 @@ class EventTest {
         Assertions.assertThat(event.getDescription()).isEqualTo(description);
     }
 
-    @Test
-    public void testFree() {
+    @ParameterizedTest
+    @MethodSource("paramsForTestFree")
+    public void testFree(int basePrice, int maxPrice, boolean isFree) {
         //Given
         Event event = Event.builder()
-                .basePrice(0)
-                .maxPrice(0)
+                .basePrice(basePrice)
+                .maxPrice(maxPrice)
                 .build();
 
         //When
         event.update();
 
         //Then
-        assertThat(event.isFree()).isTrue();
-
-        //Given
-         event = Event.builder()
-                .basePrice(100)
-                .maxPrice(0)
-                .build();
-
-        //When
-        event.update();
-
-        //Then
-        assertThat(event.isFree()).isFalse();
-
-        //Given
-        event = Event.builder()
-                .basePrice(0)
-                .maxPrice(100)
-                .build();
-
-        //When
-        event.update();
-
-        //Then
-        assertThat(event.isFree()).isFalse();
+        assertThat(event.isFree()).isEqualTo(isFree);
+    }
+    private static Object[] paramsForTestFree() {
+        return new Object[] {
+                new Object[] {0, 0, true},
+                new Object[] {100, 0, false},
+                new Object[] {0, 100, false},
+                new Object[] {100, 200, false},
+        };
     }
 
-    @Test
-    public void testOffline() {
+    @ParameterizedTest
+    @MethodSource("parametersForTestOffline")
+    public void testOffline(String location, boolean isOffline) {
         //given
         Event event = Event.builder()
-                .location("강남역 네이버 D2 스타텁 팩토리")
+                .location(location)
                 .build();
 
         //when
         event.update();
 
         //then
-        assertThat(event.isOffline()).isTrue();
-
-        //given
-        event = Event.builder()
-                .build();
-
-        //when
-        event.update();
-
-        //then
-        assertThat(event.isOffline()).isFalse();
+        assertThat(event.isOffline()).isEqualTo(isOffline);
     }
+
+    private static Object[] parametersForTestOffline() {
+        return new Object[] {
+                new Object[] {"강남", true},
+                new Object[] {null, false},
+                new Object[] {"       ", false}
+        };
+    }
+
 }
