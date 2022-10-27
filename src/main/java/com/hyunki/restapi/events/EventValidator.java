@@ -20,6 +20,25 @@ public class EventValidator {
         }
 
         // TODO beginEventDateTime
-        // TODO closeEnrollmentDateTime
+        LocalDateTime beginEventDateTime = eventDto.getBeginEventDateTime();
+        if(beginEventDateTime.isAfter(eventDto.getEndEventDateTime()) ||
+           beginEventDateTime.isBefore(eventDto.getCloseEnrollmentDateTime()) ||
+           beginEventDateTime.isBefore(eventDto.getBeginEnrollmentDateTime())) {
+            errors.rejectValue("begeinEventDateTime", "wrongValue", "beginEventDateTime is wrong");
+        }
+
+        LocalDateTime beginEnrollmentDateTime = eventDto.getBeginEnrollmentDateTime();
+        if(beginEnrollmentDateTime.isAfter(eventDto.getCloseEnrollmentDateTime()) ||
+           beginEnrollmentDateTime.isAfter(eventDto.getBeginEventDateTime()) ||
+           beginEnrollmentDateTime.isAfter(eventDto.getEndEventDateTime())) {
+            errors.rejectValue("beginEnrollmentDateTime", "wrongValue", "beginEnrollmentDateTime is wrong");
+        }
+
+        LocalDateTime closeEnrollmentDateTime = eventDto.getCloseEnrollmentDateTime();
+        if(closeEnrollmentDateTime.isBefore(eventDto.getBeginEnrollmentDateTime()) ||
+           closeEnrollmentDateTime.isAfter(eventDto.getBeginEventDateTime()) ||
+           closeEnrollmentDateTime.isAfter(eventDto.getEndEventDateTime())) {
+            errors.rejectValue("closeEnrollmentDateTime", "wrongValue", "closeEnrollmentDateTime is wrong");
+        }
     }
 }

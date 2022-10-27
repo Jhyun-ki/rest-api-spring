@@ -30,10 +30,12 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
+        //@valid 어노테이션 에러
         if(errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
         }
 
+        //validator 설정 에러
         eventValidator.validate(eventDto, errors);
         if(errors.hasErrors()) {
             return ResponseEntity.badRequest().body(errors);
