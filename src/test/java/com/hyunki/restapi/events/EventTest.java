@@ -10,6 +10,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @RunWith(JUnitParamsRunner.class)
@@ -82,6 +84,16 @@ class EventTest {
                 new Object[] {null, false},
                 new Object[] {"       ", false}
         };
+    }
+
+    @Test
+    public void someTest() {
+        this.someTestMethod("aaa", "bbb", "ccc", "ddd");
+    }
+
+    private void someTestMethod(String... someString) {
+        System.out.println("className : " + someString.getClass().getName());
+        Arrays.stream(someString).map(asd -> "someString : " + asd).forEach(System.out::println);
     }
 
 }
