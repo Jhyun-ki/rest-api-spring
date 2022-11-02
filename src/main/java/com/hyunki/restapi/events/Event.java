@@ -1,6 +1,7 @@
 package com.hyunki.restapi.events;
 
 import lombok.*;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder @AllArgsConstructor @NoArgsConstructor
 @Getter @Setter @EqualsAndHashCode
 @Entity
-public class  Event {
+public class  Event extends RepresentationModel<Event> {
     @Id @GeneratedValue
     private Integer id;
     private String name;
