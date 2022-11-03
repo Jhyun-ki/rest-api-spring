@@ -8,8 +8,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 public class ErrorResource extends EntityModel<Errors> {
-    public ErrorResource(Errors content) {
-        super(content);
+    public ErrorResource(Errors errors) {
+        super(errors);
         add(linkTo(methodOn(IndexController.class).index()).withRel("index"));
     }
 }
