@@ -1,26 +1,12 @@
 package com.hyunki.restapi.events;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hyunki.restapi.common.RestDocsConfiguration;
+import com.hyunki.restapi.common.BaseControllerTest;
 import com.hyunki.restapi.common.TestDescription;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
-
 
 import java.time.LocalDateTime;
 import java.util.stream.IntStream;
@@ -30,27 +16,13 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest //웹관련 테스트는 이걸로하는게 좋다, 왜냐하면 mock할게 너무많아서 힘들다(테스트코드작성이 힘들다)
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class EventControllerTests {
-
-    //dispatcherServlet에 가짜 요청과 응답을 확인할수있도록
-    //웹서버를 띄우지않는다, 단위테스트보다는 좀 무거움
-    @Autowired
-    MockMvc mockMvc;
-
-    @Autowired
-    ObjectMapper objectMapper;
-
+public class EventControllerTests extends BaseControllerTest {
     @Autowired
     EventRepository eventRepository;
 
@@ -211,25 +183,231 @@ public class EventControllerTests {
         this.mockMvc.perform(get("/api/events")
                         .param("page", "1")
                         .param("size", "10")
-                        .param("sort", "name,DESC"))
+                        .param("sort", "id,DESC"))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("page").exists())
                 .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
                 .andExpect(jsonPath("_links.self").exists())
                 .andExpect(jsonPath("_links.profile").exists())
-                .andDo(document("query-events"));
-        //TODO , 문서화 추가 , page, _links에 설명 넣기.
+                .andDo(document("query-events",
+                        requestParameters(
+                                parameterWithName("page").description("요청할 페이지, 페이지는 0부터 시작합니다."),
+                                parameterWithName("size").description("요청할 데이터 개수"),
+                                parameterWithName("sort").description("요청할 데이터의 정렬 기준, 정렬 순서")),
+                        responseHeaders(
+                                headerWithName("Content-type").description("content type header")),
+                        responseFields(
+                                fieldWithPath("_embedded.eventList[].id").description("identifier of event"),
+                                fieldWithPath("_embedded.eventList[].name").description("name of event"),
+                                fieldWithPath("_embedded.eventList[].description").description("description of event"),
+                                fieldWithPath("_embedded.eventList[].beginEnrollmentDateTime").description("date time of begin enrollment of event"),
+                                fieldWithPath("_embedded.eventList[].closeEnrollmentDateTime").description("date time of close enrollment of event"),
+                                fieldWithPath("_embedded.eventList[].beginEventDateTime").description("date time of begin event"),
+                                fieldWithPath("_embedded.eventList[].endEventDateTime").description("date time of end event"),
+                                fieldWithPath("_embedded.eventList[].location").description("location of event"),
+                                fieldWithPath("_embedded.eventList[].basePrice").description("base price of event"),
+                                fieldWithPath("_embedded.eventList[].maxPrice").description("max price of event"),
+                                fieldWithPath("_embedded.eventList[].limitOfEnrollment").description("limit or enrollment"),
+                                fieldWithPath("_embedded.eventList[].free").description("it tells this event is free or not"),
+                                fieldWithPath("_embedded.eventList[].offline").description("it tells this event is offline or not"),
+                                fieldWithPath("_embedded.eventList[].eventStatus").description("event status"),
+                                fieldWithPath("_embedded.eventList[]._links.self.href").description("이 이벤트의 상세 페이지 링크 정보"),
+                                fieldWithPath("_links.first.href").description("첫 번째 페이지로 이동할 링크"),
+                                fieldWithPath("_links.prev.href").description("이전 페이지로 이동할 링크"),
+                                fieldWithPath("_links.self.href").description("현재 페이지로 이동할 링크"),
+                                fieldWithPath("_links.next.href").description("다음 페이지로 이동할 링크"),
+                                fieldWithPath("_links.last.href").description("마지막 페이지로 이동할 링크"),
+                                fieldWithPath("_links.profile.href").description("link to profile"),
+                                fieldWithPath("page.size").description("응답된 데이터 개수"),
+                                fieldWithPath("page.totalElements").description("전체 데이터 개수"),
+                                fieldWithPath("page.totalPages").description("전체 페이지 개수"),
+                                fieldWithPath("page.number").description("응답된 목록의 페이지 번호")
+                        ),
+                        links(
+                                linkWithRel("self").description("link to self"),
+                                linkWithRel("next").description("다음 페이지로 이동할 링크"),
+                                linkWithRel("last").description("마지막 페이지로 이동할 링크"),
+                                linkWithRel("prev").description("이전 페이지로 이동할 링크"),
+                                linkWithRel("first").description("첫 번째 페이지로 이동할 링크"),
+                                linkWithRel("profile").description("link to update an existing event")
+                        )
 
+                ));
     }
 
-    private void generateEvent(int index) {
+    @Test
+    @TestDescription("기존의 이벤트를 하나 조회하기")
+    public void getEvent() throws Exception {
+        //Given
+        Event event = this.generateEvent(100);
+
+        // When & Then
+        this.mockMvc.perform(get("/api/events/{id}", event.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").exists())
+                .andExpect(jsonPath("id").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("get-an-event",
+                        responseHeaders(headerWithName("Content-Type").description("Content type header")),
+                        responseFields(
+                                fieldWithPath("id").description("identifier of event"),
+                                fieldWithPath("name").description("Name of event"),
+                                fieldWithPath("description").description("description of event"),
+                                fieldWithPath("beginEnrollmentDateTime").description("date time of begin of event"),
+                                fieldWithPath("closeEnrollmentDateTime").description("date time of close of event"),
+                                fieldWithPath("beginEventDateTime").description("date time of begin of event"),
+                                fieldWithPath("endEventDateTime").description("date time of end of event"),
+                                fieldWithPath("location").description("location of event"),
+                                fieldWithPath("basePrice").description("base price of event"),
+                                fieldWithPath("maxPrice").description("max price of event"),
+                                fieldWithPath("limitOfEnrollment").description("limit or Enrollment"),
+                                fieldWithPath("free").description("it tells if this event is free or not"),
+                                fieldWithPath("offline").description("it tells if this event is offline event or not"),
+                                fieldWithPath("eventStatus").description("event status"),
+                                fieldWithPath("_links.self.href").description("link to self"),
+                                fieldWithPath("_links.profile.href").description("link to profile")
+                        ),
+                        links(
+                                linkWithRel("self").description("link to self"),
+                                linkWithRel("profile").description("link to update an existing event")
+                        )));
+    }
+
+    @Test
+    @TestDescription("없는 이벤트를 조회 했을때 404 응답받기")
+    public void getEvent404() throws Exception {
+        this.mockMvc.perform(get("/api/events/{id}", "11883"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @TestDescription("이벤트를 정상적으로 수정하기")
+    public void updateEvent() throws Exception {
+        //given
+        Event event = this.generateEvent(200);
+        EventDto eventDto = this.modelMapper.map(event, EventDto.class);
+        String eventName = "Updated Event";
+        eventDto.setName(eventName);
+
+        //when & then
+        //accept header 해도 안해도 상관없음
+        this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").value(eventName))
+                .andExpect(jsonPath("_links.self").exists())
+                .andDo(document("update-event",
+                        requestHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+                        ),
+                        requestFields(
+                                fieldWithPath("name").description("Name of event"),
+                                fieldWithPath("description").description("description of event"),
+                                fieldWithPath("beginEnrollmentDateTime").description("date time of begin of event"),
+                                fieldWithPath("closeEnrollmentDateTime").description("date time of close of event"),
+                                fieldWithPath("beginEventDateTime").description("date time of begin of event"),
+                                fieldWithPath("endEventDateTime").description("date time of end of event"),
+                                fieldWithPath("location").description("location of event"),
+                                fieldWithPath("basePrice").description("base price of event"),
+                                fieldWithPath("maxPrice").description("max price of event"),
+                                fieldWithPath("limitOfEnrollment").description("limit or Enrollment")
+                        ),
+                        responseHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+                        ),
+                        responseFields(
+                                fieldWithPath("id").description("identifier of updated event"),
+                                fieldWithPath("name").description("Name of updated event"),
+                                fieldWithPath("description").description("description of updated event"),
+                                fieldWithPath("beginEnrollmentDateTime").description("date time of begin of event"),
+                                fieldWithPath("closeEnrollmentDateTime").description("date time of close of event"),
+                                fieldWithPath("beginEventDateTime").description("date time of begin of event"),
+                                fieldWithPath("endEventDateTime").description("date time of end of event"),
+                                fieldWithPath("location").description("location of event"),
+                                fieldWithPath("basePrice").description("base price of event"),
+                                fieldWithPath("maxPrice").description("max price of event"),
+                                fieldWithPath("limitOfEnrollment").description("limit or Enrollment"),
+                                fieldWithPath("free").description("it tells if this event is free or not"),
+                                fieldWithPath("offline").description("it tells if this event is offline event or not"),
+                                fieldWithPath("eventStatus").description("event status"),
+                                fieldWithPath("_links.self.href").description("link to self"),
+                                fieldWithPath("_links.profile.href").description("link to profile")
+                        ),
+                        links(
+                                linkWithRel("self").description("link to self"),
+                                linkWithRel("profile").description("link to update an existing event")
+                        )));
+    }
+
+    @Test
+    @TestDescription("입력값이 비어있는 경우에 이벤트 수정 실패")
+    public void updateEvent400_Empty() throws Exception {
+        //Given
+        Event event = this.generateEvent(200);
+        EventDto eventDto = new EventDto();
+
+        //When & Then
+        this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @TestDescription("입력값이 잘못된 경우에 이벤트 수정 실패")
+    public void updateEvent400_Wrong() throws Exception {
+        //given
+        Event event = this.generateEvent(200);
+        EventDto eventDto = this.modelMapper.map(event, EventDto.class);
+        eventDto.setBasePrice(20000);
+        eventDto.setMaxPrice(1000);
+
+        //when & then
+        this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @TestDescription("존재하지 않는 이벤트 수정 실패")
+    public void updateEvent404() throws Exception {
+        // Given
+        Event event = this.generateEvent(200);
+        EventDto eventDto = this.modelMapper.map(event, EventDto.class);
+
+        this.mockMvc.perform(put("/api/events/12351341")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(eventDto)))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    private Event generateEvent(int index) {
         Event event = Event.builder()
                 .name("event " + index)
                 .description("test event")
+                .beginEnrollmentDateTime(LocalDateTime.of(2018, 11, 23,14, 21))
+                .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 24, 14, 23))
+                .beginEventDateTime(LocalDateTime.of(2018, 11, 25, 14, 21))
+                .endEventDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("강남역 D2 스타텁 팩토리")
+                .free(false)
+                .offline(true)
+                .eventStatus(EventStatus.DRAFT)
                 .build();
 
-        this.eventRepository.save(event);
+        return this.eventRepository.save(event);
     }
 
 }

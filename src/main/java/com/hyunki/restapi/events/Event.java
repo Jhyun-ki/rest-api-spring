@@ -1,5 +1,6 @@
 package com.hyunki.restapi.events;
 
+import com.hyunki.restapi.accounts.Account;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -26,6 +27,8 @@ public class  Event extends RepresentationModel<Event> {
     private boolean free;
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
+    @ManyToOne
+    private Account manager;
 
     public void update() {
         // Update free
@@ -42,6 +45,5 @@ public class  Event extends RepresentationModel<Event> {
         else {
             this.offline = true;
         }
-
     }
 }
