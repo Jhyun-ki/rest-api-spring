@@ -1,8 +1,10 @@
 package com.hyunki.restapi.configs;
 
 import com.hyunki.restapi.accounts.Account;
+import com.hyunki.restapi.accounts.AccountRepository;
 import com.hyunki.restapi.accounts.AccountRole;
 import com.hyunki.restapi.accounts.AccountService;
+import com.hyunki.restapi.common.AppProperties;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -27,21 +29,31 @@ public class AppConfig {
     }
 
     //테스트 데이터 삽입
-//    @Bean
-//    public ApplicationRunner applicationRunner() {
-//        return new ApplicationRunner() {
-//            @Autowired
-//            AccountService accountService;
-//
-//            @Override
-//            public void run(ApplicationArguments args) throws Exception {
-//                Account hyunki = Account.builder()
-//                        .email("hyunki@email.com")
-//                        .password("hyunki")
-//                        .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-//                        .build();
-//                accountService.saveAccount(hyunki);
-//            }
-//        };
-//    }
+    @Bean
+    public ApplicationRunner applicationRunner() {
+        return new ApplicationRunner() {
+            @Autowired
+            AccountService accountService;
+
+            @Autowired
+            AppProperties appProperties;
+
+            @Override
+            public void run(ApplicationArguments args) throws Exception {
+                Account admin = Account.builder()
+                        .email(appProperties.getAdminUserName())
+                        .password(appProperties.getAdminPassword())
+                        .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
+                        .build();
+                accountService.saveAccount(admin);
+
+                Account user = Account.builder()
+                        .email(appProperties.getUserUserName())
+                        .password(appProperties.getUserPassword())
+                        .roles(Set.of( AccountRole.USER))
+                        .build();
+                accountService.saveAccount(user);
+            }
+        };
+    }
 }

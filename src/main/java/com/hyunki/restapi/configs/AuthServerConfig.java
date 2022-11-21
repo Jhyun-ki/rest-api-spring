@@ -1,6 +1,7 @@
 package com.hyunki.restapi.configs;
 
 import com.hyunki.restapi.accounts.AccountService;
+import com.hyunki.restapi.common.AppProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,8 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private final AccountService accountService;
     private final TokenStore tokenStore;
 
+    private final AppProperties appProperties;
+
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
@@ -32,10 +35,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         //인메모리 보다는 jdbc활용하여 데이터베이스에서 관리하는게 좋다
         clients.inMemory()
-                .withClient("myApp")
+                .withClient(appProperties.getClientId())
                 .authorizedGrantTypes("password", "refresh_token")
                 .scopes("read","write")
-                .secret(this.passwordEncoder.encode("pass"))
+                .secret(this.passwordEncoder.encode(appProperties.getClientSecret()))
                 .accessTokenValiditySeconds(10 * 60)
                 .refreshTokenValiditySeconds(6 * 10 * 60);
     }
