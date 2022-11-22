@@ -1,6 +1,8 @@
 package com.hyunki.restapi.events;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.hyunki.restapi.accounts.Account;
+import com.hyunki.restapi.accounts.AccountSerializer;
 import lombok.*;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -28,6 +30,7 @@ public class  Event extends RepresentationModel<Event> {
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
     @ManyToOne
+    @JsonSerialize(using = AccountSerializer.class)
     private Account manager;
 
     public void update() {

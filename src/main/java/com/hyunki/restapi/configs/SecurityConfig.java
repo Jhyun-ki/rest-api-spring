@@ -37,16 +37,6 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-//    @Bean
-//    public PasswordEncoder getPasswordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
-
-//    @Bean
-//    public UserDetailsService userDetailsService(AccountRepository accountRepository, PasswordEncoder passwordEncoder ) {
-//        return new AccountService(accountRepository, passwordEncoder);
-//    }
-
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> {
@@ -54,17 +44,4 @@ public class SecurityConfig {
             web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
         };
     }
-
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.anonymous()
-//                .and()
-//                .formLogin()
-//                .and()
-//                .authorizeRequests()
-//                .mvcMatchers(HttpMethod.GET, "/api/**").authenticated()
-//                .anyRequest().authenticated();
-//
-//        return http.build();
-//    }
 }
