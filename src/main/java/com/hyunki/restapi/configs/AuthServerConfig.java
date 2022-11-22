@@ -22,7 +22,6 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
     private final AuthenticationManager authenticationManager;
     private final AccountService accountService;
     private final TokenStore tokenStore;
-
     private final AppProperties appProperties;
 
 
